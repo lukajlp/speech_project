@@ -115,7 +115,7 @@ def main(args):
 
     ModelClass = model_variants[args.model_variant]
     model = ModelClass(
-        input_size=128,
+        input_size=args.input_size,
         vocab_size=len(vocab),
         dim_model=args.dim_model,
         num_heads=args.num_heads,
@@ -184,6 +184,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--device", type=str, default="cuda", help="Dispositivo (cuda ou cpu)"
+    )
+    parser.add_argument(
+        "--input_size", type=int, default=128, help="Tamanho da entrada"
     )
     args = parser.parse_args()
     main(args)
