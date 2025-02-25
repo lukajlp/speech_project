@@ -8,8 +8,12 @@ def collate_fn(batch):
 
     # Padding para áudio: Cada sample já tem o formato (Canais, Frequências, Tempo)
     max_time = max(w.shape[-1] for w in waveforms)
-    waveforms_padded = torch.stack(
-        [torch.nn.functional.pad(w, (0, max_time - w.shape[-1])) for w in waveforms]
+    waveforms_padded = (
+        torch.stack(
+            [torch.nn.functional.pad(w, (0, max_time - w.shape[-1])) for w in waveforms]
+        )
+        .squeeze(1)
+        .permute(0, 2, 1)
     )
 
     # Padding para texto
