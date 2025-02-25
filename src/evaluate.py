@@ -8,6 +8,21 @@ import jiwer
 from models import TransformerASR_DA, ConformerASRBase, ConformerASRPE, ConformerASRDA
 from utils import collate_fn, decode_predictions
 
+def levenshtein(a, b):
+    """Calcula a distância de Levenshtein entre duas strings."""
+    m, n = len(a), len(b)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = 0 if a[i - 1] == b[j - 1] else 1
+            dp[i][j] = min(dp[i - 1][j] + 1,      # deleção
+                           dp[i][j - 1] + 1,      # inserção
+                           dp[i - 1][j - 1] + cost)  # substituição
+    return dp[m][n]
 
 def evaluate_model(test_set_path, processed_dir, model_path, model_variant, device, dim_model, num_heads, num_layers):
     # Carrega o vocabulário
@@ -56,8 +71,25 @@ def evaluate_model(test_set_path, processed_dir, model_path, model_variant, devi
             all_references.extend(true_texts)
             all_predictions.extend(pred_texts)
 
+    # Calcula o WER usando jiwer
     wer_score = jiwer.wer(all_references, all_predictions)
     print(f"WER: {wer_score * 100:.2f}%")
+    
+    # Calcula a acurácia de match exato (muito rígida)
+    exact_matches = sum(1 for ref, pred in zip(all_references, all_predictions) if ref.strip() == pred.strip())
+    accuracy = exact_matches / len(all_references)
+    print(f"Exact Match Accuracy: {accuracy * 100:.2f}%")
+    
+    # Calcula a CER (Character Error Rate)
+    total_distance = 0
+    total_chars = 0
+    for ref, pred in zip(all_references, all_predictions):
+        distance = levenshtein(ref, pred)
+        total_distance += distance
+        total_chars += len(ref)
+    cer = total_distance / total_chars if total_chars > 0 else 0
+    print(f"CER: {cer * 100:.2f}%")
+
     print("\nExemplos de predições:")
     for i in range(min(5, len(all_references))):
         print(f"Real: {all_references[i]}")
