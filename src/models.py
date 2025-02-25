@@ -31,14 +31,16 @@ class PositionalEncoding(nn.Module):
 # Arquiteturas Transformer
 # ========================
 class TransformerASR(nn.Module):
-    def __init__(self, vocab_size):
+    def __init__(self, vocab_size, dim_model=512, num_heads=8):
         super().__init__()
-        self.embedding = nn.Linear(128, 256)
+        self.embedding = nn.Linear(128, dim_model)
         self.transformer = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model=256, nhead=8, batch_first=True),
+            nn.TransformerEncoderLayer(
+                d_model=dim_model, nhead=num_heads, batch_first=True
+            ),
             num_layers=6,
         )
-        self.fc = nn.Linear(256, vocab_size)
+        self.fc = nn.Linear(dim_model, vocab_size)
 
     def forward(self, x):
         x = self.embedding(x)
@@ -104,15 +106,6 @@ class TransformerASR_DA(nn.Module):
 # Bloco Conformer
 # ========================
 class ConformerBlock(nn.Module):
-    """
-    Bloco básico inspirado no Conformer, contendo:
-      - Uma camada feed-forward (com scaling de 0.5)
-      - Um módulo de multi-head self-attention
-      - Um módulo convolucional (com convolução depthwise)
-      - Uma segunda camada feed-forward (com scaling de 0.5)
-      - Normalização de camada final
-    """
-
     def __init__(self, d_model, nhead, ff_multiplier=4, dropout=0.1):
         super().__init__()
         # Primeira subcamada Feed-Forward
@@ -175,20 +168,20 @@ class ConformerASRBase(nn.Module):
         self,
         vocab_size,
         input_size=128,
-        d_model=256,
+        dim_model=256,
         nhead=4,
         num_layers=6,
         dropout=0.1,
     ):
         super().__init__()
-        self.embedding = nn.Linear(input_size, d_model)
+        self.embedding = nn.Linear(input_size, dim_model)
         self.blocks = nn.ModuleList(
             [
-                ConformerBlock(d_model, nhead, ff_multiplier=4, dropout=dropout)
+                ConformerBlock(dim_model, nhead, ff_multiplier=4, dropout=dropout)
                 for _ in range(num_layers)
             ]
         )
-        self.fc = nn.Linear(d_model, vocab_size)
+        self.fc = nn.Linear(dim_model, vocab_size)
 
     def forward(self, x):
         # x: (batch, time, features)
@@ -205,21 +198,21 @@ class ConformerASRPE(nn.Module):
         self,
         vocab_size,
         input_size=128,
-        d_model=256,
+        dim_model=256,
         nhead=4,
         num_layers=6,
         dropout=0.1,
     ):
         super().__init__()
-        self.embedding = nn.Linear(input_size, d_model)
-        self.pos_encoder = PositionalEncoding(d_model, dropout=dropout)
+        self.embedding = nn.Linear(input_size, dim_model)
+        self.pos_encoder = PositionalEncoding(dim_model, dropout=dropout)
         self.blocks = nn.ModuleList(
             [
-                ConformerBlock(d_model, nhead, ff_multiplier=4, dropout=dropout)
+                ConformerBlock(dim_model, nhead, ff_multiplier=4, dropout=dropout)
                 for _ in range(num_layers)
             ]
         )
-        self.fc = nn.Linear(d_model, vocab_size)
+        self.fc = nn.Linear(dim_model, vocab_size)
 
     def forward(self, x):
         x = self.embedding(x)
@@ -236,21 +229,21 @@ class ConformerASRDA(nn.Module):
         self,
         vocab_size,
         input_size=128,
-        d_model=256,
+        dim_model=256,
         nhead=4,
         num_layers=6,
         dropout=0.1,
     ):
         super().__init__()
-        self.embedding = nn.Linear(input_size, d_model)
-        self.pos_encoder = PositionalEncoding(d_model, dropout=dropout)
+        self.embedding = nn.Linear(input_size, dim_model)
+        self.pos_encoder = PositionalEncoding(dim_model, dropout=dropout)
         self.blocks = nn.ModuleList(
             [
-                ConformerBlock(d_model, nhead, ff_multiplier=4, dropout=dropout)
+                ConformerBlock(dim_model, nhead, ff_multiplier=4, dropout=dropout)
                 for _ in range(num_layers)
             ]
         )
-        self.fc = nn.Linear(d_model, vocab_size)
+        self.fc = nn.Linear(dim_model, vocab_size)
         # Data augmentation: SpecAugment
         self.freq_mask = transforms.FrequencyMasking(freq_mask_param=27)
         self.time_mask = transforms.TimeMasking(time_mask_param=100)
