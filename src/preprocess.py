@@ -15,35 +15,42 @@ def preprocess_data(raw_dir, processed_dir, datasets_dir, url="train-clean-100")
     processed_dataset_path = os.path.join(processed_dir, "full_dataset.pt")
     if not os.path.exists(processed_dataset_path):
         print("Iniciando pré-processamento...")
-        # Carrega o dataset bruto (download já foi feito)
+
+        # Criar dataset raw
         raw_dataset = torchaudio.datasets.LIBRISPEECH(
-            root=raw_dir, url=url, download=False
+            root=raw_dir, url=url, download=True
         )
+
         # Cria o vocabulário
         vocab = build_vocab(raw_dataset)
         torch.save(vocab, os.path.join(processed_dir, "vocab.pt"))
         print("Vocabulário criado!")
-        # Define o transform (MelSpectrogram)
-        transform = MelSpectrogram(sample_rate=16000, n_mels=80, normalized=True)
+
+        # Processar áudio e textos
+        transform = MelSpectrogram(sample_rate=16000, n_mels=128, normalized=True)
         dataset = LibriSpeechDataset(
-            raw_dir, url=url, transform=transform, vocab=vocab, download=False
+            raw_dir, url=url, transform=transform, vocab=vocab, download=True
         )
         torch.save(dataset, processed_dataset_path)
         print("Dataset processado salvo!")
+
         # Divisão em splits
         total_len = len(dataset)
         train_size = int(0.7 * total_len)
         val_size = int(0.15 * total_len)
         test_size = total_len - train_size - val_size
+
         splits = random_split(
             dataset,
             [train_size, val_size, test_size],
             generator=torch.Generator().manual_seed(42),
         )
+
         torch.save(splits[0], os.path.join(datasets_dir, "train_set.pt"))
         torch.save(splits[1], os.path.join(datasets_dir, "val_set.pt"))
         torch.save(splits[2], os.path.join(datasets_dir, "test_set.pt"))
-        print("Splits salvos!")
+        
+        print("Pré-processamento concluído!")
     else:
         print("Dataset já pré-processado. Pulando etapa.")
 
