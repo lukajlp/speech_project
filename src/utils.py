@@ -10,8 +10,6 @@ def collate_fn(batch):
     waveforms_padded = torch.stack(
         [torch.nn.functional.pad(w, (0, max_time - w.shape[-1])) for w in waveforms]
     )
-    # Se necessário, pode-se permutar para (batch, time, channels)
-    waveforms_padded = waveforms_padded.permute(0, 2, 1)
 
     transcript_lengths = torch.tensor([len(t) for t in transcripts], dtype=torch.long)
     transcripts_padded = pad_sequence(transcripts, batch_first=True, padding_value=0)
