@@ -188,6 +188,15 @@ class ConformerBlock(nn.Module):
         conv_input = x.transpose(1, 2)  # (batch, d_model, time)
         conv_output = self.conv(conv_input)
         conv_output = conv_output.transpose(1, 2)  # (batch, time, d_model)
+
+        # Se o comprimento da saída da convolução for maior, recorta para o tamanho de x
+        if conv_output.size(1) > x.size(1):
+            conv_output = conv_output[:, : x.size(1), :]
+        elif conv_output.size(1) < x.size(1):
+            # Caso seja menor, preenche com zeros à direita
+            diff = x.size(1) - conv_output.size(1)
+            conv_output = nn.functional.pad(conv_output, (0, 0, 0, diff))
+
         x = x + conv_output
 
         # Feed Forward 2 (com fator 0.5)
