@@ -1,3 +1,5 @@
 torch
 torchaudio
 jiwer
+numpy
+ffmpeg-python
