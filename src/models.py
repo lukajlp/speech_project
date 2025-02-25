@@ -169,7 +169,7 @@ class ConformerASRBase(nn.Module):
         vocab_size,
         input_size=128,
         dim_model=256,
-        nhead=4,
+        num_heads=4,
         num_layers=6,
         dropout=0.1,
     ):
@@ -177,7 +177,7 @@ class ConformerASRBase(nn.Module):
         self.embedding = nn.Linear(input_size, dim_model)
         self.blocks = nn.ModuleList(
             [
-                ConformerBlock(dim_model, nhead, ff_multiplier=4, dropout=dropout)
+                ConformerBlock(dim_model, num_heads, ff_multiplier=4, dropout=dropout)
                 for _ in range(num_layers)
             ]
         )
@@ -199,7 +199,7 @@ class ConformerASRPE(nn.Module):
         vocab_size,
         input_size=128,
         dim_model=256,
-        nhead=4,
+        num_heads=4,
         num_layers=6,
         dropout=0.1,
     ):
@@ -208,7 +208,7 @@ class ConformerASRPE(nn.Module):
         self.pos_encoder = PositionalEncoding(dim_model, dropout=dropout)
         self.blocks = nn.ModuleList(
             [
-                ConformerBlock(dim_model, nhead, ff_multiplier=4, dropout=dropout)
+                ConformerBlock(dim_model, num_heads, ff_multiplier=4, dropout=dropout)
                 for _ in range(num_layers)
             ]
         )
@@ -230,7 +230,7 @@ class ConformerASRDA(nn.Module):
         vocab_size,
         input_size=128,
         dim_model=256,
-        nhead=4,
+        num_heads=4,
         num_layers=6,
         dropout=0.1,
     ):
@@ -239,7 +239,7 @@ class ConformerASRDA(nn.Module):
         self.pos_encoder = PositionalEncoding(dim_model, dropout=dropout)
         self.blocks = nn.ModuleList(
             [
-                ConformerBlock(dim_model, nhead, ff_multiplier=4, dropout=dropout)
+                ConformerBlock(dim_model, num_heads, ff_multiplier=4, dropout=dropout)
                 for _ in range(num_layers)
             ]
         )
