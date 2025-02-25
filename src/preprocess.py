@@ -24,7 +24,7 @@ def preprocess_data(raw_dir, processed_dir, datasets_dir, url="train-clean-100")
         torch.save(vocab, os.path.join(processed_dir, "vocab.pt"))
         print("Vocabulário criado!")
         # Define o transform (MelSpectrogram)
-        transform = MelSpectrogram(sample_rate=16000, n_mels=128, normalized=True)
+        transform = MelSpectrogram(sample_rate=16000, n_mels=80, normalized=True)
         dataset = LibriSpeechDataset(
             raw_dir, url=url, transform=transform, vocab=vocab, download=False
         )
