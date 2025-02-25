@@ -148,7 +148,6 @@ class ConformerBlock(nn.Module):
         # Módulo Convolucional (kernel_size=32)
         # Para manter o mesmo comprimento na saída, usamos padding=kernel_size//2 (16).
         self.conv = nn.Sequential(
-            nn.LayerNorm(d_model),
             nn.Conv1d(
                 d_model,
                 d_model,
