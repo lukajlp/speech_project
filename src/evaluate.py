@@ -9,7 +9,7 @@ from models import TransformerASR_DA, ConformerASRBase, ConformerASRPE, Conforme
 from utils import collate_fn, decode_predictions
 
 
-def evaluate_model(test_set_path, processed_dir, model_path, model_variant, device):
+def evaluate_model(test_set_path, processed_dir, model_path, model_variant, device, dim_model, num_heads, num_layers):
     # Carrega o vocabulário
     vocab = torch.load(os.path.join(processed_dir, "vocab.pt"), weights_only=False)
     vocab_inv = {v: k for k, v in vocab.items()}
@@ -27,9 +27,8 @@ def evaluate_model(test_set_path, processed_dir, model_path, model_variant, devi
         )
     ModelClass = model_variants[model_variant]
 
-    # Instancia o modelo com os parâmetros mínimos (aqui usamos apenas o vocab_size;
-    # certifique-se de que os parâmetros usados no treinamento estejam compatíveis)
-    model = ModelClass(vocab_size=len(vocab))
+    # Instancia o modelo com os hiperparâmetros informados
+    model = ModelClass(vocab_size=len(vocab), dim_model=dim_model, num_heads=num_heads, num_layers=num_layers)
     model.load_state_dict(torch.load(model_path, weights_only=False))
     model.to(device)
     model.eval()
@@ -73,6 +72,9 @@ def main(args):
         args.model_path,
         args.model_variant,
         device,
+        args.dim_model,
+        args.num_heads,
+        args.num_layers
     )
 
 
@@ -105,5 +107,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--device", type=str, default="cuda", help="Dispositivo (cuda ou cpu)"
     )
+    # Parâmetros do modelo que devem ser compatíveis com o treinamento
+    parser.add_argument("--dim_model", type=int, default=144, help="Dimensão do modelo")
+    parser.add_argument("--num_heads", type=int, default=4, help="Número de cabeças de atenção")
+    parser.add_argument("--num_layers", type=int, default=16, help="Número de camadas do encoder")
     args = parser.parse_args()
     main(args)
