@@ -2,8 +2,8 @@ import torch
 
 def main():
     # Definir os caminhos corretos para os arquivos
-    dataset_path = "./data/processed/full_dataset.pt"
-    vocab_path = "./data/data/processed/vocab.pt"
+    dataset_path = "../data/processed/full_dataset.pt"
+    vocab_path = "../data/processed/vocab.pt"
     
     # Carregar o dataset pré-processado
     dataset = torch.load(dataset_path)
