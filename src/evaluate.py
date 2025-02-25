@@ -11,7 +11,7 @@ from utils import collate_fn, decode_predictions
 
 def evaluate_model(test_set_path, processed_dir, model_path, model_variant, device):
     # Carrega o vocabulário
-    vocab = torch.load(os.path.join(processed_dir, "vocab.pt"))
+    vocab = torch.load(os.path.join(processed_dir, "vocab.pt"), weights_only=False)
     vocab_inv = {v: k for k, v in vocab.items()}
 
     # Mapeia os nomes das variantes para as classes correspondentes
@@ -30,12 +30,12 @@ def evaluate_model(test_set_path, processed_dir, model_path, model_variant, devi
     # Instancia o modelo com os parâmetros mínimos (aqui usamos apenas o vocab_size;
     # certifique-se de que os parâmetros usados no treinamento estejam compatíveis)
     model = ModelClass(vocab_size=len(vocab))
-    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.load_state_dict(torch.load(model_path, weights_only=False))
     model.to(device)
     model.eval()
 
     # Carrega o conjunto de teste
-    test_set = torch.load(test_set_path)
+    test_set = torch.load(test_set_path, weights_only=False)
     test_loader = DataLoader(test_set, batch_size=16, collate_fn=collate_fn)
 
     all_references = []
